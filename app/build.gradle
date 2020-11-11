@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 30
@@ -8,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.codescanner"
-        minSdkVersion 26
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -36,6 +37,15 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    implementation 'com.squareup.okhttp3:okhttp:3.2.0'
+    implementation 'org.jsoup:jsoup:1.7.3'
+    implementation 'org.riversun:okhttp3-cookie-helper:1.0.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+
+    implementation 'com.google.firebase:firebase-firestore:17.1.2'
 
 
 }
