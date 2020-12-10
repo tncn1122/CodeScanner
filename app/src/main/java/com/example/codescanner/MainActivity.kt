@@ -1,36 +1,38 @@
 package com.example.codescanner
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.firestore.FirebaseFirestore
+ 
 import com.google.zxing.integration.android.IntentIntegrator
 import kotlinx.android.synthetic.main.activity_main.*
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.jsoup.Jsoup
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
-    private var res : String = ""
-
-
+    var check = false;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
 
-        scanBtn.setOnClickListener {
+        button.setOnClickListener {
+            check = true;
+
             scanCode()
         }
-
 
     }
 
@@ -43,12 +45,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        progressBar.visibility = View.VISIBLE
+        txtId.visibility = View.INVISIBLE
+        txtName.visibility = View.INVISIBLE
+        txtmajor.visibility = View.INVISIBLE
+        txtSTT.visibility = View.INVISIBLE
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if (result != null) {
             val value = result.contents
             if (value != null) {
                 GlobalScope.launch(Dispatchers.IO) {
-                    Log.d("baokiin",value)
                 var formBody  = FormBody.Builder()
                     .add("MSSV" , value)
                     .build()
@@ -62,11 +68,35 @@ class MainActivity : AppCompatActivity() {
                     .readTimeout(10, TimeUnit.SECONDS)
                     .build()
                 var response = client.newCall(request).execute()
-
                     runOnUiThread {
-                        textID.text = response.message()
+                        progressBar.visibility = View.INVISIBLE
+                        txtId.visibility = View.VISIBLE
+                        txtName.visibility = View.VISIBLE
+                        txtmajor.visibility = View.VISIBLE
+                        txtSTT.visibility = View.VISIBLE
+                        val post = JSONObject(response.body().string())
+                        if(post["status"].toString().equals("NOTFOUND")){
+                            txtSTT.text = "Bạn không có trong sanh sách"
+                            txtId.visibility = View.INVISIBLE
+                            txtName.visibility = View.INVISIBLE
+                            txtmajor.visibility = View.INVISIBLE
+                        }
+                        else{
+                            txtId.text = post["mssv"].toString()
+                            txtName.text = post["name"].toString()
+                            txtmajor.text = post["major"].toString()
+
+                            if(post["status"].toString().equals("LATE"))
+                                txtSTT.text = "Điểm danh trễ"
+
+                            else if(post["status"].toString().equals("SUCCESS"))
+                                txtSTT.text = "Điểm danh thành công"
+                            else if(post["status"].toString().equals("CHECKED"))
+                                txtSTT.text = "Bạn đã điểm danh rồi"
+                        }
+
                     }
-                    scanCode()
+                    //res.postValue(response.body().string())
                     }
             }
             else {
@@ -76,6 +106,7 @@ class MainActivity : AppCompatActivity() {
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
+
 
 
 
